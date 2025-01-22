@@ -13,6 +13,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // based on tutorial from https://medium.com/@cheickzida/golang-implementing-jwt-token-authentication-bba9bfd84d60
@@ -26,8 +27,6 @@ func init() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-
-	database.Init()
 
 	secretKey = []byte(os.Getenv("SECRET_KEY"))
 	if len(secretKey) == 0 {
@@ -97,8 +96,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// change this later to use bcrypt
-	if storedPassword != u.Password {
+	err = bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(u.Password))
+	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid credentials"})
 		return

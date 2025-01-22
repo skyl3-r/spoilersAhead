@@ -1,7 +1,9 @@
 package main
 
 import (
+	"backend/database"
 	"backend/login"
+	"backend/signup"
 	"log"
 	"net/http"
 )
@@ -34,8 +36,10 @@ func main() {
 	// 	rw.Header().Set("Content-Length", fmt.Sprint(len(resp)))
 	// 	rw.Write(resp)
 	// })
+	database.Init()
 
 	http.HandleFunc("/api/login", login.LoginHandler)
+	http.HandleFunc("/api/signup", signup.SignupHandler)
 	log.Println("Server is available at http://localhost:8000")
 	// log.Fatal(http.ListenAndServe(":8000", handler))
 	log.Fatal(http.ListenAndServe(":8000", nil))
