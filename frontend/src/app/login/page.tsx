@@ -74,7 +74,7 @@ export default function LoginPage() {
             >
                 Login
             </button>
-            <Link href="/home">
+            <Link href="/">
                 <p className="bg-neutral-400 hover:bg-neutral-500 text-white py-2 px-4 rounded">
                   Cancel
                 </p>

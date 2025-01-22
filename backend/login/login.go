@@ -3,16 +3,31 @@ package login
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
 )
 
 // following tutorial from https://medium.com/@cheickzida/golang-implementing-jwt-token-authentication-bba9bfd84d60
 var (
-	secretKey = []byte("jgPueEclKu9hNvUbcf42ZJSGxOqtynavOMU2172ZNDk")
+	secretKey []byte
 )
+
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	secretKey = []byte(os.Getenv("SECRET_KEY"))
+	if len(secretKey) == 0 {
+		panic("SECRET_KEY not set in environment")
+	}
+}
 
 func CreateToken(username string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
@@ -56,11 +71,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Printf("The request body is %v\n", r.Body)
+	// fmt.Printf("The request body is %v\n", r.Body)
 
 	var u User
 	json.NewDecoder(r.Body).Decode(&u)
-	fmt.Printf("The user request value %v", u)
+	// fmt.Printf("The user request value %v", u)
 
 	if u.Username == "Admin" && u.Password == "123456" {
 		tokenString, err := CreateToken(u.Username)
