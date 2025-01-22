@@ -1,6 +1,7 @@
 package login
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -8,11 +9,14 @@ import (
 	"os"
 	"time"
 
+	"backend/database"
+
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 )
 
-// following tutorial from https://medium.com/@cheickzida/golang-implementing-jwt-token-authentication-bba9bfd84d60
+// based on tutorial from https://medium.com/@cheickzida/golang-implementing-jwt-token-authentication-bba9bfd84d60
+// but heavily edited for my use
 var (
 	secretKey []byte
 )
@@ -22,6 +26,8 @@ func init() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+
+	database.Init()
 
 	secretKey = []byte(os.Getenv("SECRET_KEY"))
 	if len(secretKey) == 0 {
@@ -77,19 +83,52 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&u)
 	// fmt.Printf("The user request value %v", u)
 
-	if u.Username == "Admin" && u.Password == "123456" {
-		tokenString, err := CreateToken(u.Username)
-		if err != nil {
+	var storedPassword string
+	err := database.DB.QueryRow("SELECT password FROM users WHERE username = $1", u.Username).Scan(&storedPassword)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{"error": "Invalid credentials"})
+		} else {
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Errorf("No username found")
+			json.NewEncoder(w).Encode(map[string]string{"error": "Database error"})
+			// fmt.Fprint(w, "Database error")
 		}
-		w.WriteHeader(http.StatusOK)
-		// fmt.Fprint(w, tokenString)
-		json.NewEncoder(w).Encode(map[string]string{"token": tokenString})
 		return
-	} else {
-		w.WriteHeader(http.StatusUnauthorized)
-		// fmt.Fprint(w, "Invalid credentials")
-		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid credentials"})
 	}
+
+	// change this later to use bcrypt
+	if storedPassword != u.Password {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid credentials"})
+		return
+	}
+
+	tokenString, err := CreateToken(u.Username)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		// fmt.Errorf("No username found")
+		json.NewEncoder(w).Encode(map[string]string{"error": "Error creating token"})
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	// fmt.Fprint(w, tokenString)
+	json.NewEncoder(w).Encode(map[string]string{"token": tokenString})
+	return
+
+	// if u.Username == "Admin" && u.Password == "123456" {
+	// 	tokenString, err := CreateToken(u.Username)
+	// 	if err != nil {
+	// 		w.WriteHeader(http.StatusInternalServerError)
+	// 		fmt.Errorf("No username found")
+	// 	}
+	// 	w.WriteHeader(http.StatusOK)
+	// 	// fmt.Fprint(w, tokenString)
+	// 	json.NewEncoder(w).Encode(map[string]string{"token": tokenString})
+	// 	return
+	// } else {
+	// 	w.WriteHeader(http.StatusUnauthorized)
+	// 	// fmt.Fprint(w, "Invalid credentials")
+	// 	json.NewEncoder(w).Encode(map[string]string{"error": "Invalid credentials"})
+	// }
 }

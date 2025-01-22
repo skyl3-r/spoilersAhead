@@ -1,0 +1,35 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE IF NOT EXISTS users (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    username TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS fandoms (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS posts (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    posterid UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    fandomid UUID NOT NULL REFERENCES fandoms(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    body TEXT NOT NULL,
+    postdate TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS userlikes (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    postid UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    userid UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS usercomments (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    postid UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    userid UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    body TEXT NOT NULL,
+    commentdate TIMESTAMP NOT NULL
+);
