@@ -67,12 +67,20 @@ export default function LoginPage() {
                 <p className={`${noticia.className} underline`}>Sign up instead</p>
             </Link>
           </div>
-          <button
-            type="submit"
-            className={`${noticia.className} w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded`}
-          >
-            Login
-          </button>
+          <div className="flex flex-row justify-between">
+            <button
+                type="submit"
+                className={`${noticia.className} bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded`}
+            >
+                Login
+            </button>
+            <Link href="/home">
+                <p className="bg-neutral-400 hover:bg-neutral-500 text-white py-2 px-4 rounded">
+                  Cancel
+                </p>
+            </Link>
+          </div>
+          
 
         </form>
       </div>

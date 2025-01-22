@@ -50,11 +50,15 @@ export default function Navbar() {
                     <MyLogo />
                 </Link>
             </nav>
-            <button 
-                onClick={handleLogin}
-                className={`${noticia.className} text-xl text-black hover:text-neutral-400`}>
-                {isLoggedIn ? `${username} | Logout` : 'Login'}
-            </button>
+            <div className='flex flex-row items-center'>
+                <p className={`${noticia.className} text-xl text-black`}>{isLoggedIn ? `${username} |\xa0` : ''}</p>
+                <button 
+                    onClick={handleLogin}
+                    className={`${noticia.className} text-xl text-black hover:text-neutral-400`}>
+                    {isLoggedIn ? `Logout` : 'Login'}
+                </button>
+            </div>
+            
         </header>
     )
 }
