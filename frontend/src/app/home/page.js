@@ -39,6 +39,7 @@
 
 'use client';
 import { useEffect, useState } from 'react';
+import PopularBanner from "@/components/PopularBanner"
 
 export default function Home() {
     // const [data, setData] = useState(null);
@@ -78,5 +79,9 @@ export default function Home() {
     //         </h1>
     //     </main>
     // );
-    return <p>home page</p>
+    return (
+        <div>
+            <PopularBanner />
+        </div>
+    )
 }

@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MyLogo from './Logo';
 import { noticia } from '@/utils/fonts';
 import { jwtDecode } from 'jwt-decode';
@@ -10,29 +10,24 @@ interface DecodedToken {
     exp: number;
 }
 export default function Navbar() {
-    // const [isLoggedIn, setLoggedIn] = useState(false);
+    const [isLoggedIn, setLoggedIn] = useState(false);
+    const [username, setUsername] = useState('');
 
-    // const toggleLoggedIn = () => {
-    //     setLoggedIn(!isLoggedIn);
-    // }
-
-    let isLoggedIn = false;
-    let username = '';
-
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-
-    if (token) {
-        try {
-            const decoded: DecodedToken = jwtDecode(token);
-            const currentTime = Math.floor(Date.now() / 1000);
-            if (decoded.exp > currentTime) {
-                isLoggedIn = true;
-                username = decoded.username;
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const decoded: DecodedToken = jwtDecode(token);
+                const currentTime = Math.floor(Date.now() / 1000);
+                if (decoded.exp > currentTime) {
+                    setLoggedIn(true);
+                    setUsername(decoded.username);
+                }
+            } catch (err) {
+                console.error('Invalid or expired token', err);
             }
-        } catch (err) {
-            console.error('Invalid or expired token', err);
         }
-    }
+    }, []);
 
     const handleLogin = () => {
         if (isLoggedIn) {
