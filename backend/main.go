@@ -41,6 +41,7 @@ func main() {
 	http.HandleFunc("/api/login", login.LoginHandler)
 	http.HandleFunc("/api/signup", signup.SignupHandler)
 	http.HandleFunc("/api/seed", database.Seed)
+	http.HandleFunc("/api/fandoms", database.GetTopFandomsHandler)
 	log.Println("Server is available at http://localhost:8000")
 	// log.Fatal(http.ListenAndServe(":8000", handler))
 	log.Fatal(http.ListenAndServe(":8000", nil))
