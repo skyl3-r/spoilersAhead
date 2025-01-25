@@ -44,6 +44,9 @@ func main() {
 	http.HandleFunc("/api/fandoms", database.GetTopFandomsHandler)
 	http.HandleFunc("/api/posts", database.GetPostsHandler)
 	http.HandleFunc("/api/allfandoms", database.GetFandoms)
+	http.HandleFunc("/api/mainpost", database.GetPostInfo)
+	http.HandleFunc("/api/comments", database.GetComments)
+
 	log.Println("Server is available at http://localhost:8000")
 	// log.Fatal(http.ListenAndServe(":8000", handler))
 	log.Fatal(http.ListenAndServe(":8000", nil))

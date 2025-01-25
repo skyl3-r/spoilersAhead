@@ -466,6 +466,7 @@ func GetFandoms(w http.ResponseWriter, r *http.Request) {
 	`)
 
 	if err != nil {
+		fmt.Printf("Query failed: %v\n", err)
 		http.Error(w, "Failed to query fandoms", http.StatusInternalServerError)
 		return
 	}
@@ -483,4 +484,114 @@ func GetFandoms(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(fandoms)
+}
+
+type MainPost struct {
+	Id string `json:"id"`
+}
+
+func GetPostInfo(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	// fmt.Printf("The request body is %v\n", r.Body)
+
+	var mp MainPost
+	json.NewDecoder(r.Body).Decode(&mp)
+	// fmt.Printf("The user request value %v", u)
+
+	var p Post
+	err := DB.QueryRow(`SELECT 
+		posts.id,
+		posts.title,
+		posts.body, 
+		posts.postdate,
+		users.username AS postername,
+		fandoms.name AS fandomname,
+		COUNT(DISTINCT userlikes.id) AS likecount,
+			COUNT(DISTINCT usercomments.id) AS commentcount
+		FROM posts
+		JOIN users ON posts.posterid = users.id
+		JOIN fandoms ON posts.fandomid = fandoms.id
+		LEFT JOIN userlikes ON posts.id = userlikes.postid
+		LEFT JOIN usercomments ON posts.id = usercomments.postid
+		WHERE posts.id = $1
+		GROUP BY posts.id, users.username, fandoms.name`, mp.Id).Scan(
+		&p.Id, &p.Title, &p.Body,
+		&p.Postdate, &p.Postername, &p.Fandomname, &p.Likecount, &p.Commentcount,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{"error": "Invalid id"})
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Printf("Query failed: %v\n", err)
+			json.NewEncoder(w).Encode(map[string]string{"error": "Database error"})
+			// fmt.Fprint(w, "Database error")
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	// fmt.Fprint(w, tokenString)
+	json.NewEncoder(w).Encode(p)
+}
+
+type Comment struct {
+	Id          string `json:"id"`
+	Body        string `json:"body"`
+	Commentdate string `json:"commentdate"`
+	Username    string `json:"username"`
+}
+
+func GetComments(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	var mp MainPost
+	json.NewDecoder(r.Body).Decode(&mp)
+
+	rows, err := DB.Query(`
+		SELECT 
+			uc.id,
+			uc.body,
+			uc.commentdate,
+			users.username
+			FROM usercomments AS uc
+			JOIN users ON uc.userid = users.id
+			WHERE uc.postid = $1
+	`, mp.Id)
+
+	if err != nil {
+		http.Error(w, "Failed to query comments", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var comments []Comment
+	for rows.Next() {
+		var c Comment
+		if err := rows.Scan(&c.Id, &c.Body, &c.Commentdate, &c.Username); err != nil {
+			http.Error(w, "Failed to scan fandom data", http.StatusInternalServerError)
+			return
+		}
+		comments = append(comments, c)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(comments)
 }

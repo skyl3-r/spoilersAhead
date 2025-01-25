@@ -31,7 +31,7 @@ import { jwtDecode } from "jwt-decode";
 import { DecodedToken } from "./Navbar";
 import Post from "./Post";
 
-interface Post {
+export interface Post {
   id: string;
   postername: string;
   fandomname: string;
