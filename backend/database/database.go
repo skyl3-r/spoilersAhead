@@ -335,12 +335,14 @@ type Searched struct {
 }
 
 type Post struct {
-	Id         string `json:"id"`
-	Postername string `json:"postername"`
-	Fandomname string `json:"fandomname"`
-	Title      string `json:"title"`
-	Body       string `json:"body"`
-	Postdate   string `json:"postdate"`
+	Id           string `json:"id"`
+	Postername   string `json:"postername"`
+	Fandomname   string `json:"fandomname"`
+	Title        string `json:"title"`
+	Body         string `json:"body"`
+	Postdate     string `json:"postdate"`
+	Likecount    string `json:"likecount"`
+	Commentcount string `json:"commentcount"`
 }
 
 func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
@@ -399,11 +401,16 @@ func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
 			posts.body,
 			posts.postdate,
 			users.username AS postername,
-			fandoms.name AS fandomname
+			fandoms.name AS fandomname,
+			COUNT(DISTINCT userlikes.id) AS likecount,
+			COUNT(DISTINCT usercomments.id) AS commentcount
 		FROM posts
 		JOIN users ON posts.posterid = users.id
 		JOIN fandoms ON posts.fandomid = fandoms.id
+		LEFT JOIN userlikes ON posts.id = userlikes.postid
+		LEFT JOIN usercomments ON posts.id = usercomments.postid
 		WHERE %s
+		GROUP BY posts.id, users.username, fandoms.name
 		ORDER BY posts.postdate DESC
 	`, whereClause)
 	// queryParams = append(queryParams, ITEMS_PER_PAGE, offset)
@@ -423,7 +430,7 @@ func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
 		var post Post
 		if err := rows.Scan(
 			&post.Id, &post.Title, &post.Body,
-			&post.Postdate, &post.Postername, &post.Fandomname,
+			&post.Postdate, &post.Postername, &post.Fandomname, &post.Likecount, &post.Commentcount,
 		); err != nil {
 			http.Error(w, "Failed to scan post data", http.StatusInternalServerError)
 			return

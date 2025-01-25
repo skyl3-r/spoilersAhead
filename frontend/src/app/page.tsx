@@ -1,31 +1,30 @@
-import MyLogo from "@/components/Logo"
-import Link from "next/link"
+import MyLogo from "@/components/Logo";
+import Link from "next/link";
 
 export default function Start() {
   return (
     <div className="fixed inset-0 flex items-center justify-center">
       <div className="p-6 bg-slate-300 rounded shadow-lg">
         <MyLogo />
-        <p className="mt-4">Welcome! Login or start browsing <br></br> content immediately</p>
+        <p className="mt-4">
+          Welcome! Login or start browsing <br></br> content immediately
+        </p>
         <div className="mt-4 flex space-x-4">
-              <Link href="/login">
-                <p className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">
-                  Login
-                </p>
-              </Link>
-              <Link href="/home">
-                <p className="bg-neutral-400 hover:bg-neutral-500 text-white py-2 px-4 rounded">
-                  Start browsing
-                </p>
-              </Link>
-            </div>
+          <Link href="/login">
+            <p className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded">
+              Login
+            </p>
+          </Link>
+          <Link href="/home">
+            <p className="bg-neutral-400 hover:bg-neutral-500 text-white py-2 px-4 rounded">
+              Start browsing
+            </p>
+          </Link>
+        </div>
       </div>
     </div>
-
-  )
+  );
 }
-
-
 
 // import Image from "next/image";
 
