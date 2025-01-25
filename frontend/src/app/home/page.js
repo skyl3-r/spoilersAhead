@@ -40,6 +40,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import PopularBanner from "@/components/PopularBanner"
+import Posts from "@/components/Posts"
 
 export default function Home() {
     // const [data, setData] = useState(null);
@@ -82,6 +83,7 @@ export default function Home() {
     return (
         <div>
             <PopularBanner />
+            <Posts />
         </div>
     )
 }

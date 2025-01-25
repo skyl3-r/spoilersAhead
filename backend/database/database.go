@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 
 	"net/http"
 
@@ -316,6 +317,157 @@ func GetTopFandomsHandler(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var fandom Fandom
 		if err := rows.Scan(&fandom.Name, &fandom.Count); err != nil {
+			http.Error(w, "Failed to scan fandom data", http.StatusInternalServerError)
+			return
+		}
+		fandoms = append(fandoms, fandom)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(fandoms)
+}
+
+type Searched struct {
+	Query       string `json:"query"`
+	Fandoms     string `json:"fandoms"`
+	User        string `json:"user"`
+	IsAllPoster bool   `json:"isAllPoster"`
+}
+
+type Post struct {
+	Id         string `json:"id"`
+	Postername string `json:"postername"`
+	Fandomname string `json:"fandomname"`
+	Title      string `json:"title"`
+	Body       string `json:"body"`
+	Postdate   string `json:"postdate"`
+}
+
+func GetPostsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	var s Searched
+	if err := json.NewDecoder(r.Body).Decode(&s); err != nil {
+		fmt.Printf("Failed to decode request body: %v\n", err)
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	// fmt.Printf("%s %s %s %s\n", s.Query, s.Fandoms, s.IsAllPoster, s.User)
+
+	queryConditions := []string{"posts.title ILIKE $1"}
+	queryParams := []interface{}{"%" + s.Query + "%"}
+	paramCounter := 2
+
+	// Add Fandoms filter
+	if len(s.Fandoms) > 0 {
+		// fandomPlaceholders := []string{}
+		// for _, fandom := range s.Fandoms {
+		// 	fandomPlaceholders = append(fandomPlaceholders, fmt.Sprintf("$%d", paramCounter))
+		// 	queryParams = append(queryParams, fandom)
+		// 	paramCounter++
+		// }
+		temp := strings.Split(s.Fandoms, ",")
+		processed := []string{}
+		for _, fandom := range temp {
+			processed = append(processed, fmt.Sprintf(`'%s'`, fandom))
+		}
+		// fmt.Printf("fandoms.name IN (%s)", processed)
+		queryConditions = append(queryConditions, fmt.Sprintf("fandoms.name IN (%s)", strings.Join(processed, ",")))
+	}
+
+	// Add User filter
+	if !s.IsAllPoster {
+		queryConditions = append(queryConditions, fmt.Sprintf("users.username = $%d", paramCounter))
+		queryParams = append(queryParams, s.User)
+	}
+
+	// Combine conditions into WHERE clause
+	whereClause := strings.Join(queryConditions, " AND ")
+
+	// Query the database
+	query := fmt.Sprintf(`
+		SELECT
+			posts.id,
+			posts.title,
+			posts.body,
+			posts.postdate,
+			users.username AS postername,
+			fandoms.name AS fandomname
+		FROM posts
+		JOIN users ON posts.posterid = users.id
+		JOIN fandoms ON posts.fandomid = fandoms.id
+		WHERE %s
+		ORDER BY posts.postdate DESC
+	`, whereClause)
+	// queryParams = append(queryParams, ITEMS_PER_PAGE, offset)
+
+	rows, err := DB.Query(query, queryParams...)
+
+	if err != nil {
+		fmt.Printf("Query failed: %v\n", err)
+		http.Error(w, "Failed to query posts", http.StatusInternalServerError)
+		return
+	}
+
+	defer rows.Close()
+
+	var posts []Post
+	for rows.Next() {
+		var post Post
+		if err := rows.Scan(
+			&post.Id, &post.Title, &post.Body,
+			&post.Postdate, &post.Postername, &post.Fandomname,
+		); err != nil {
+			http.Error(w, "Failed to scan post data", http.StatusInternalServerError)
+			return
+		}
+		// fmt.Printf("%s", post.Postername)
+		posts = append(posts, post)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(posts); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+	}
+}
+
+type JustFandom struct {
+	Name string `json:"name"`
+}
+
+func GetFandoms(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	rows, err := DB.Query(`
+		SELECT name FROM fandoms
+		ORDER BY name;
+	`)
+
+	if err != nil {
+		http.Error(w, "Failed to query fandoms", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var fandoms []JustFandom
+	for rows.Next() {
+		var fandom JustFandom
+		if err := rows.Scan(&fandom.Name); err != nil {
 			http.Error(w, "Failed to scan fandom data", http.StatusInternalServerError)
 			return
 		}

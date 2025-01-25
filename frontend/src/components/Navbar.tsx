@@ -5,7 +5,7 @@ import MyLogo from './Logo';
 import { noticia } from '@/utils/fonts';
 import { jwtDecode } from 'jwt-decode';
 
-interface DecodedToken {
+export interface DecodedToken {
     username: string;
     exp: number;
 }
@@ -32,6 +32,11 @@ export default function Navbar() {
     const handleLogin = () => {
         if (isLoggedIn) {
             localStorage.removeItem('token');
+
+            const url = new URL(window.location.href);
+        url.search = ''; // Clear all search params
+        window.history.replaceState({}, document.title, url.toString());
+        
             window.location.reload();
         } else {
             window.location.href = '/login';
