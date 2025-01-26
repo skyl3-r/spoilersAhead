@@ -284,8 +284,9 @@ CREATE TABLE IF NOT EXISTS usercomments (
 }
 
 type Fandom struct {
-	Name  string `json:"name"`
-	Count int    `json:"count"`
+	Name   string `json:"name"`
+	Count  int    `json:"count"`
+	Latest string `json:"date"`
 }
 
 func GetTopFandomsHandler(w http.ResponseWriter, r *http.Request) {
@@ -299,15 +300,16 @@ func GetTopFandomsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := DB.Query(`
-		SELECT f.name, COUNT(p.id) AS post_count
+		SELECT f.name, COUNT(p.id) AS post_count, MAX(p.postdate) AS most_recent_post_date
 		FROM fandoms f
 		JOIN posts p ON f.id = p.fandomid
 		GROUP BY f.name
-		ORDER BY post_count DESC
+		ORDER BY post_count DESC, most_recent_post_date DESC
 		LIMIT 4;
 	`)
 
 	if err != nil {
+		fmt.Printf("Query failed: %v\n", err)
 		http.Error(w, "Failed to query top fandoms", http.StatusInternalServerError)
 		return
 	}
@@ -316,7 +318,8 @@ func GetTopFandomsHandler(w http.ResponseWriter, r *http.Request) {
 	var fandoms []Fandom
 	for rows.Next() {
 		var fandom Fandom
-		if err := rows.Scan(&fandom.Name, &fandom.Count); err != nil {
+		if err := rows.Scan(&fandom.Name, &fandom.Count, &fandom.Latest); err != nil {
+
 			http.Error(w, "Failed to scan fandom data", http.StatusInternalServerError)
 			return
 		}

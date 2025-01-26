@@ -1,13 +1,21 @@
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { LuPencil } from "react-icons/lu";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
-interface Fandom {
+export interface Fandom {
   name: string;
 }
 
-export default function Search({ placeholder }: { placeholder: string }) {
+export default function Search({
+  placeholder,
+  isLoggedIn,
+}: {
+  placeholder: string;
+  isLoggedIn: boolean;
+}) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
@@ -91,6 +99,18 @@ export default function Search({ placeholder }: { placeholder: string }) {
         >
           Search
         </button>
+
+        {isLoggedIn ? (
+          <Link
+            href={`/home/post/create`}
+            className="flex flex-row rounded-md items-center bg-[#9fc2cc] text-sm px-4 py-2 hover:bg-[#6ea4b4] gap-x-1"
+          >
+            {" "}
+            <LuPencil /> Add new Post
+          </Link>
+        ) : (
+          ""
+        )}
       </div>
 
       <div className="flex flex-row gap-x-5 ">

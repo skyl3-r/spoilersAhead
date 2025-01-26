@@ -12,7 +12,7 @@ export default function AddComment({
 
   const handleSubmit = async () => {
     // console.log("submit");
-    // like it
+    // comment it
     try {
       const response = await fetch("http://localhost:8000/api/commentpost", {
         method: "POST",
@@ -35,11 +35,11 @@ export default function AddComment({
 
   return (
     <div className="p-4 max-w-lg mx-auto bg-white shadow rounded-2xl">
-      <h2
-        className={`${noticia.className} font-bold border-b mb-2 pb-2 border-black`}
+      <p
+        className={`${noticia.className} border-b mb-2 pb-2 border-black`}
       >
         Add a Comment
-      </h2>
+      </p>
       <form onSubmit={handleSubmit}>
         <div className="flex mt-2 mb-4 border rounded-lg">
           <textarea

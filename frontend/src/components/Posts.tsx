@@ -45,6 +45,7 @@ export interface Post {
 export default function Posts() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [username, setUsername] = useState("ANONYMOUSUSER");
+  const [isLoggedIn, setLoggedIn] = useState(false);
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -55,6 +56,7 @@ export default function Posts() {
         const currentTime = Math.floor(Date.now() / 1000);
         if (decoded.exp > currentTime) {
           setUsername(decoded.username);
+          setLoggedIn(true);
         }
       } catch (err) {
         console.error("Invalid or expired token", err);
@@ -102,7 +104,7 @@ export default function Posts() {
     <div className="flex flex-col p-3">
       <p className={`${kaushan.className} text-xl pb-2`}>Recent Posts</p>
       {/* Search Component */}
-      <Search placeholder="Search by title..." />
+      <Search placeholder="Search by title..." isLoggedIn={isLoggedIn} />
 
       {/* Posts List */}
       <div className="grid grid-cols-1 gap-4 pt-4">
