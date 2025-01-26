@@ -1,5 +1,5 @@
 # spoilersAhead
-Web forum to discuss movies and books, developed for CVWO application
+Web forum to discuss movies and books, developed for CVWO application. Done by Skyler Ng.
 
 ![image](https://github.com/user-attachments/assets/e2483f9a-680e-4068-a4f6-870205f22401)
 
