@@ -67,7 +67,7 @@ export default function Posts() {
       const processedFandoms = fandoms.split(",");
       const isAllPoster = searchParams.get("isAllPoster") !== "false";
       const user = username;
-      console.log(query, processedFandoms, isAllPoster, user);
+    //   console.log(query, processedFandoms, isAllPoster, user);
 
       try {
         // const response = await fetch(

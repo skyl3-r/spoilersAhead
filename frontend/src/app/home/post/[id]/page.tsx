@@ -23,30 +23,16 @@ export default function PostPage() {
     const [post, setPost] = useState<Post>({
         id: '',
         postername: '',
-        fandomname: '',
-        title: '',
-        body: '',
+        fandomname: 'Loading...',
+        title: 'Loading...',
+        body: 'Loading...',
         postdate: '2025-01-01T00:00:00Z',
         commentcount: '',
         likecount: ''
     })
-    const [username, setUsername] = useState("ANONYMOUSUSER");
     const [comments, setComments] = useState<commentInfo[]>([]);
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (token) {
-          try {
-            const decoded: DecodedToken = jwtDecode(token);
-            const currentTime = Math.floor(Date.now() / 1000);
-            if (decoded.exp > currentTime) {
-              setUsername(decoded.username);
-            }
-          } catch (err) {
-            console.error("Invalid or expired token", err);
-          }
-        }
-    
         const fetchPost = async () => {
     
           try {
@@ -89,6 +75,8 @@ export default function PostPage() {
                 console.error("Error fetching comment:", error);
               }
         }
+
+        
     
         fetchPost();
         fetchComments();

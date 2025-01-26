@@ -27,10 +27,13 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 
 	var u User
 	json.NewDecoder(r.Body).Decode(&u)
+	if u.Username == "ANONYMOUSUSER" {
+		http.Error(w, "Username not allowed.", http.StatusBadRequest)
+	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	if err != nil {
-		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
+		http.Error(w, "Failed to hash password.a", http.StatusInternalServerError)
 		return
 	}
 

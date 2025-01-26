@@ -595,3 +595,51 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(comments)
 }
+
+type Userlike struct {
+	Username string `json:"username"`
+	Postid   string `json:"postid"`
+}
+
+func GetLikedByMe(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	var ul Userlike
+	json.NewDecoder(r.Body).Decode(&ul)
+	// fmt.Printf("%s %s", ul.Username, ul.Postid)
+
+	rows, err := DB.Query(`
+		SELECT users.username
+		FROM userlikes
+		LEFT JOIN users ON users.id = userlikes.userid
+		WHERE users.username = $1 AND userlikes.postid = $2
+		GROUP BY users.id
+	`, ul.Username, ul.Postid)
+
+	if err != nil {
+		fmt.Printf("Query failed: %v\n", err)
+		http.Error(w, "Failed to query comments", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	// var likedbyme string
+	if !rows.Next() {
+		likedbyme := "false"
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(likedbyme)
+		return
+	}
+	likedbyme := "true"
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(likedbyme)
+}
