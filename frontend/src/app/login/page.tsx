@@ -25,7 +25,13 @@ export default function LoginPage() {
     if (response.ok) {
       const data = await response.json();
       localStorage.setItem("token", data.token);
-      router.back();
+      // console.log(document.referrer)
+      // if (document.referrer === "") {
+      //   router.push("/home");
+      // } else {
+      //   router.back();
+      // }
+      router.push("/home");
     } else {
       alert("Invalid username or password");
     }
