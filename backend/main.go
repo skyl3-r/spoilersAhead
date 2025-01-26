@@ -52,6 +52,10 @@ func main() {
 	http.HandleFunc("/api/checkuserlike", database.GetLikedByMe)
 	http.HandleFunc("/api/commentpost", actions.AddUsercomment)
 	http.HandleFunc("/api/createpost", actions.AddPost)
+	http.HandleFunc("/api/deletepost", actions.RemovePost)
+	http.HandleFunc("/api/editpost", actions.EditPost)
+	http.HandleFunc("/api/deletecomment", actions.RemoveComment)
+
 	log.Println("Server is available at http://localhost:8000")
 	// log.Fatal(http.ListenAndServe(":8000", handler))
 	log.Fatal(http.ListenAndServe(":8000", nil))

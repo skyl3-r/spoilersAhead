@@ -210,3 +210,124 @@ func AddPost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Usercomment created successfully"))
 }
+
+func RemovePost(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	var ul Userlike
+	json.NewDecoder(r.Body).Decode(&ul)
+
+	// insert
+	_, err := database.DB.Exec("DELETE FROM posts WHERE id = $1", ul.Postid)
+	if err != nil {
+		fmt.Printf("Query failed: %v\n", err)
+		http.Error(w, "Failed to delete from post.", http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("Post deleted successfully"))
+}
+
+type Updateuserpost struct {
+	Postid    string `json:"postid"`
+	Title     string `json:"title"`
+	Body      string `json:"body"`
+	Fandom    string `json:"selFandom"`
+	NewFandom string `json:"trimmed"`
+}
+
+func EditPost(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	var up Updateuserpost
+	json.NewDecoder(r.Body).Decode(&up)
+	// fmt.Printf(`%s, %s, %s, %s, %s\n`, up.Body, up.Title, up.Fandom, up.NewFandom, up.Postid)
+
+	var actualFandom string
+	if up.Fandom == "Others" {
+		// need to insert fandom first
+		_, err := database.DB.Exec("INSERT INTO fandoms (name) VALUES ($1)",
+			up.NewFandom)
+		if err != nil {
+			fmt.Printf("Fandom query failed: %v\n", err)
+			http.Error(w, "Failed to create usercomment.", http.StatusBadRequest)
+			return
+		}
+		actualFandom = up.NewFandom
+	} else {
+		actualFandom = up.Fandom
+	}
+
+	var fandomid string
+	err := database.DB.QueryRow(`
+		SELECT fandoms.id 
+		FROM fandoms
+		WHERE fandoms.name = $1
+	`, actualFandom).Scan(&fandomid)
+
+	if err != nil {
+		http.Error(w, "Failed to query fandoms", http.StatusInternalServerError)
+		return
+	}
+
+	//need current time
+	// insert
+	// fmt.Printf("%s, %s, %s, %s, %s", fandomid, up.Title, up.Body, time.Now().UTC(), up.Postid)
+	_, err = database.DB.Exec("UPDATE posts SET fandomid = $1, title = $2, body = $3, postdate = $4 WHERE id = $5",
+		fandomid, up.Title, up.Body, time.Now().UTC(), up.Postid)
+	if err != nil {
+		fmt.Printf("Query failed: %v\n", err)
+		http.Error(w, "Failed to create post.", http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("Post created successfully"))
+}
+
+type Comment struct {
+	Commentid string `json:"commentid"`
+}
+
+func RemoveComment(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	var c Comment
+	json.NewDecoder(r.Body).Decode(&c)
+
+	// insert
+	_, err := database.DB.Exec("DELETE FROM usercomments WHERE id = $1", c.Commentid)
+	if err != nil {
+		fmt.Printf("Query failed: %v\n", err)
+		http.Error(w, "Failed to delete from post.", http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("Comment deleted successfully"))
+}
