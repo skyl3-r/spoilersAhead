@@ -6,14 +6,14 @@ Web forum to discuss movies and books, developed for CVWO application. Done by S
 ## Set up
 1. Ensure that you have go downloaded (or download it [here](https://go.dev/doc/install))
 2. Ensure that you have PostGres (preferably PostGres 16) downloaded (or download it [here](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads))
-3. Create a user and password if this is your first time using PostGres. This can be done in pgAdmin, which should be downloaded with PostGres.
-4. Create a database named `spoilersahead` under the user you just created.
+3. If this is your first time using PostGres, you can use the default user, which should be `postgres`, and the password will either be empty or set up by you explicitly during the installation process.
+4. Create a database named `spoilersahead` under the user.
 5. Now, in your desired directory, `git clone https://github.com/skyl3-r/spoilersAhead.git`
 6. Open your terminal in the spoilersAhead directory and run `cd backend`
 7. Create a `.env` in `/backend` and put in information in the format below:
 ```
 SECRET_KEY= write_anything_here
-DB_USER= write_your_user_here
+DB_USER= write_your_user_here_eg_postgres
 DB_PASSWORD= write_your_password_here
 DB_NAME=spoilersahead
 ```
