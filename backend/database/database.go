@@ -577,6 +577,7 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 			FROM usercomments AS uc
 			JOIN users ON uc.userid = users.id
 			WHERE uc.postid = $1
+			ORDER BY uc.commentdate DESC
 	`, mp.Id)
 
 	if err != nil {

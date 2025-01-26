@@ -79,7 +79,7 @@ export default function EditPost({ username, postid, orititle, oribody, orifando
   return (
     <div>
       <p className={`${noticia.className} border-b mb-2 pb-2 border-black`}>
-        Write a New Post
+        Edit a Post
       </p>
       <form onSubmit={handleSubmit}>
         <div className="flex flex-col">
