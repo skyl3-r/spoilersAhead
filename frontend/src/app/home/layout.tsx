@@ -9,16 +9,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    // <html lang="en">
       
-      <body className={`${lato.className} antialiased`}>
-        {/* <header>
-          <MyLogo />
-          <nav><a href="/">Home</a></nav>
-        </header> */}
+      // <body className={`${lato.className} antialiased`}>
+        // <header>
+        //   <MyLogo />
+        //   <nav><a href="/">Home</a></nav>
+        // </header> */}
+        <div>
         <Navbar />
         {children}
-      </body>
-    </html>
+        </div>
+    // </body> */}
+    // </html> */}
   );
 }

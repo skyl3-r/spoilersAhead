@@ -1,6 +1,7 @@
 package main
 
 import (
+	"backend/actions"
 	"backend/database"
 	"backend/login"
 	"backend/signup"
@@ -40,6 +41,21 @@ func main() {
 
 	http.HandleFunc("/api/login", login.LoginHandler)
 	http.HandleFunc("/api/signup", signup.SignupHandler)
+	http.HandleFunc("/api/seed", database.Seed)
+	http.HandleFunc("/api/fandoms", database.GetTopFandomsHandler)
+	http.HandleFunc("/api/posts", database.GetPostsHandler)
+	http.HandleFunc("/api/allfandoms", database.GetFandoms)
+	http.HandleFunc("/api/mainpost", database.GetPostInfo)
+	http.HandleFunc("/api/comments", database.GetComments)
+	http.HandleFunc("/api/likepost", actions.AddUserlike)
+	http.HandleFunc("/api/unlikepost", actions.RemoveUserlike)
+	http.HandleFunc("/api/checkuserlike", database.GetLikedByMe)
+	http.HandleFunc("/api/commentpost", actions.AddUsercomment)
+	http.HandleFunc("/api/createpost", actions.AddPost)
+	http.HandleFunc("/api/deletepost", actions.RemovePost)
+	http.HandleFunc("/api/editpost", actions.EditPost)
+	http.HandleFunc("/api/deletecomment", actions.RemoveComment)
+
 	log.Println("Server is available at http://localhost:8000")
 	// log.Fatal(http.ListenAndServe(":8000", handler))
 	log.Fatal(http.ListenAndServe(":8000", nil))
